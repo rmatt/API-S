@@ -1,15 +1,16 @@
 param(
-        [parameter(mandatory=$false)][string]$IP,
-        [parameter(mandatory=$false)][string]$Username,
-        [parameter(mandatory=$false)][string]$VolName,
-        [parameter(mandatory=$false)][double]$SizeGB
+        [parameter(mandatory=$true)][string]$IP,
+        [parameter(mandatory=$true)][int]$Port=8443,
+        [parameter(mandatory=$true)][string]$Username,
+        [parameter(mandatory=$true)][string]$VolName,
+        [parameter(mandatory=$true)][double]$SizeGB
 )
 
 # MAIN CODE
 if ( !$IP ) {
 	$IP = Read-Host "Enter API-S IP address"
 }
-$URL = $( "https://" + $IP + ":443/api/1.0" )
+$URL = $( "https://" + $IP + ":" + $Port + "/api/1.0" )
 
 if ( !$Username ) {
 	$Username = Read-Host "Enter username"
