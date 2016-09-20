@@ -40,6 +40,7 @@ warnings.filterwarnings('ignore', 'Unverified HTTPS request')
 url = raw_input("Enter the base URL (e.g. https://10.0.0.227:8443/api/1.0/ontap): ")
 user = raw_input('Enter admin user name: ')
 password = getpass.getpass('Enter password: ')
+html_file_name = raw_input('Enter the path to the graph file(e.g. /Users/turie/Sites/google-graph.html): ')
 
 clusters_json = requests.get(url + '/clusters', auth=(user,password), verify=False)
 clusters = json.loads(clusters_json.text)
@@ -80,7 +81,7 @@ for aggr_num in range ( 0, int(aggrs['result']['total_records']) ):
    aggrs['result']['records'][aggr_num]['avail_pct'] = aggrs['result']['records'][aggr_num]['size_avail'] / aggr_total_avail
    data_table.append("['" + aggrs['result']['records'][aggr_num]['name'] + "'," + str(aggrs['result']['records'][aggr_num]['size_avail']) + "]")
 
-html_file = open('/Users/turie/Sites/google-graph.html', 'w')
+html_file = open(html_file_name, 'w')
 html_file.truncate()
 
 html_file.write(html_prefix)
