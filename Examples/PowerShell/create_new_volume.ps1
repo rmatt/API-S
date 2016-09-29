@@ -50,21 +50,32 @@ add-type @"
 
 # get the cluster
 do {
-	$C = invoke-restmethod -Method GET -Uri $( $URL + "/ontap/clusters" ) -Headers $Headers
-	for ( $i = 1; $i -le $C.result.total_records; $i++ ) {
-		write-host $( [string]$i + ": " + [string]$C.result.records[$i-1].name )
+	$C = @()
+	$CI = 0
+	$CT = invoke-restmethod -Method GET -Uri $( $URL + "/admin/storage-systems" ) -Headers $Headers
+
+	# parse the records to eliminate anything that isn't type = 'Ontap'
+	for ( $i = 0; $i -lt $CT.result.total_records; $i++ ) {
+		if ( $CT.result.records[$i].type.type -eq 'Ontap' ) {
+			$C += $CT.result.records[$i]
+			$CI++
+		}
+	}
+
+	for ( $i = 1; $i -le $CI; $i++ ) {
+		write-host $( [string]$i + ": " + [string]$C[$i-1].name )
 	}
 	$ClusterNum = [int]( Read-Host "Select a cluster" )
 	$ClusterNum--;
-	if ( $ClusterNum -lt 0 -or $ClusterNum -ge $C.result.total_records ) {
-		write-host $( "Error: number must be between 1 and " + [string]$C.result.total_records )
+	if ( $ClusterNum -lt 0 -or $ClusterNum -ge $CI ) {
+		write-host $( "Error: number must be between 1 and " + [string]$CI )
 	}
-} while ( $ClusterNum -lt 0 -or $ClusterNum -ge $C.result.total_records )
-write-host $C.result.records[$ClusterNum].name
+} while ( $ClusterNum -lt 0 -or $ClusterNum -ge $CI )
+write-host $C[$ClusterNum].name
 
 # get the SVM
 do {
-	$SVM = invoke-restmethod -Method GET -Uri $( $URL + "/ontap/storage-vms?cluster_key=" + $C.result.records[$ClusterNum].key ) -Headers $Headers
+	$SVM = invoke-restmethod -Method GET -Uri $( $URL + "/ontap/storage-vms?cluster_key=" + $C[$ClusterNum].key ) -Headers $Headers
 	for ( $i = 1; $i -le $SVM.result.total_records; $i++ ) {
 		write-host $( [string]$i + ": " + [string]$SVM.result.records[$i-1].name )
 	}
@@ -78,7 +89,7 @@ write-host $SVM.result.records[$SVMNum].name
 
 # get the aggregate
 do {
-	$A = invoke-restmethod -Method GET -Uri $( $URL + "/ontap/aggregates?cluster_key=" + $C.result.records[$ClusterNum].key ) -Headers $Headers
+	$A = invoke-restmethod -Method GET -Uri $( $URL + "/ontap/aggregates?cluster_key=" + $C[$ClusterNum].key ) -Headers $Headers
 	for ( $i = 1; $i -le $A.result.total_records; $i++ ) {
 		write-host $( [string]$i + ": " + [string]$A.result.records[$i-1].name )
 	}
@@ -95,6 +106,4 @@ $Body = $( "{ ""aggregate_key"": """ + $A.result.records[$AggregateNum].key + ""
 		""", ""size"": """ + $SizeGB +
 		""", ""name"": """ + $VolName + """ }" )
 
-$NM = invoke-restmethod -Method POST -Uri $( $URL + "/ontap/volumes" ) -Headers $Headers -Body $Body -ContentType "application/json"
-# $TM = invoke-restmethod -Method GET -Uri $( $URL + "/ontap/volumes?name=" + $VolName + "&aggregate_key=" + $A.result.records[$AggregateNum].key + "&storage_vm_key=" + $SVM.result.records[$SVMNum].key ) -Headers $Headers
-# $TM.result.records | fl
+# $NM = invoke-restmethod -Method POST -Uri $( $URL + "/ontap/volumes" ) -Headers $Headers -Body $Body -ContentType "application/json"
