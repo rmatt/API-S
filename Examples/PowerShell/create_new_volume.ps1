@@ -106,4 +106,4 @@ $Body = $( "{ ""aggregate_key"": """ + $A.result.records[$AggregateNum].key + ""
 		""", ""size"": """ + $SizeGB +
 		""", ""name"": """ + $VolName + """ }" )
 
-# $NM = invoke-restmethod -Method POST -Uri $( $URL + "/ontap/volumes" ) -Headers $Headers -Body $Body -ContentType "application/json"
+$NM = invoke-restmethod -Method POST -Uri $( $URL + "/ontap/volumes" ) -Headers $Headers -Body $Body -ContentType "application/json"
